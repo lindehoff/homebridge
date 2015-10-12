@@ -38,12 +38,14 @@ IndigoDomoticsPlatform.prototype = {
 
     var that = this;
     var foundAccessories = [];
+      var deviceCallsLeft;
     request.get({
       url: this.url+"/devices.json",
       json: true
     }, function(err, response, devices) {
       if (!err && response.statusCode == 200) {
         if (devices != undefined) {
+            deviceCallsLeft = devices.length;
             devices.forEach(function (device){
 
                 that.log("Getting info from device: " + device.name +" ("+ that.url+device.restURL+")");
@@ -60,6 +62,7 @@ IndigoDomoticsPlatform.prototype = {
                                 }
                             }
                         }
+                        --deviceCallsLeft;
                     }).auth(that.username, that.password, false);
                 }
 
@@ -103,7 +106,19 @@ IndigoDomoticsPlatform.prototype = {
             }
           })*/
         }
-        callback(foundAccessories);
+          do {
+              if(deviceCallsLeft){
+                if(deviceCallsLeft > 0){
+                    that.log("Waiting for devices, " + deviceCallsLeft + " left");
+                } else {
+                    callback(foundAccessories);
+                }
+              } else {
+                  that.log("No Devices yet, wait 1 sec.");
+
+              }
+          } while (deviceCallsLeft && deviceCallsLeft > 0);
+
       } else {
         that.log("There was a problem connecting with Indigo Server.");
       }
