@@ -5,7 +5,7 @@
         "port": 51826,
         "pin": "031-45-154"
     },
-    
+
     "description": "This is an example configuration file with all supported devices. You can use this as a template for creating your own configuration file containing devices you actually own.",
 
     "platforms": [
@@ -74,7 +74,7 @@
         {
             "platform": "YamahaAVR",
             "play_volume": -35,
-            "setMainInputTo": "AirPlay" 
+            "setMainInputTo": "AirPlay"
         },
         {
             "platform": "ZWayServer",
@@ -95,11 +95,11 @@
             "zones":["Kitchen Lamp","Bedroom Lamp","Living Room Lamp","Hallway Lamp"]
         },
         {
-             "platform": "HomeAssistant",
-             "name": "HomeAssistant",
-             "host": "http://192.168.1.10:8123",
-             "password": "XXXXX",
-             "supported_types": ["light", "switch", "media_player", "scene"]
+            "platform": "HomeAssistant",
+            "name": "HomeAssistant",
+            "host": "http://192.168.1.10:8123",
+            "password": "XXXXX",
+            "supported_types": ["light", "switch", "media_player", "scene"]
         },
         {
             "platform": "LIFx",
@@ -169,19 +169,19 @@
             "brightness_url": "https://192.168.1.22:3030/devices/23222/brightness/%b",
             "http_method": "POST"
         },
-	{
+        {
             "accessory": "HttpHygrometer",
             "name": "Kitchen",
             "url": "http://host/URL",
             "http_method": "GET"
         },
-	{
+        {
             "accessory": "HttpThermometer",
             "name": "Garage",
             "url": "http://home/URL",
             "http_method": "GET"
         },
-	{
+        {
             "accessory": "ELKM1",
             "name": "Security System",
             "description": "Allows basic control of Elk M1 security system. You can use 1 of 3 arm modes: Away, Stay, Night. If you need to access all 3, create 3 accessories with different names.",
@@ -210,7 +210,7 @@
             "accessory": "Hyperion",
             "name": "TV Backlight",
             "description": "Control the Hyperion TV backlight server. https://github.com/tvdzwan/hyperion",
-            "host": "localhost", 
+            "host": "localhost",
             "port": "19444"
         },
         {
