@@ -46,27 +46,70 @@ IndigoDomoticsPlatform.prototype = {
       if (!err && response.statusCode == 200) {
         if (devices != undefined) {
             deviceCallsLeft = devices.length;
+            var delay = 0;
             devices.forEach(function (device){
+                setTimeout(function(){
+                    //that.log("Getting info from device: " + device.name +" ("+ that.url+device.restURL+")");
+                    if(device.restURL) {
+                        request.get({
+                            url: that.url+device.restURL,
+                            json: true
+                        }, function (err, response, deviceInfo) {
+                            deviceCallsLeft -= 1;
 
-                that.log("Getting info from device: " + device.name +" ("+ that.url+device.restURL+")");
-                if(device.restURL) {
-                    request.get({
-                        url: that.url+device.restURL,
-                        json: true
-                    }, function (err, response, deviceInfo) {
-                        deviceCallsLeft -= 1;
+                            if (!err && response.statusCode == 200) {
+                                if (deviceInfo) {
 
-                        if (!err && response.statusCode == 200) {
-                            if (deviceInfo) {
-                                if(deviceInfo.typeSupportsOnOff) {
+                                    var accessory;
+                                    if(!deviceInfo.name) {
+                                        console.log(JSON.stringify(JSON.parse(deviceInfo), null, 4));
+                                    }
+                                    if(deviceInfo.desc){
+                                        try{
+                                            var homeBridgeSettings = JSON.parse(deviceInfo.desc);
+                                            if(homeBridgeSettings.type === "Lightbulb-Switch") {
+                                                accessory = new IndigoDomoticsAccessory(new Service.Lightbulb(deviceInfo.name), [Characteristic.On]);
+                                            } else if(homeBridgeSettings.type === "Lightbulb-Dim") {
+                                                accessory = new IndigoDomoticsAccessory(new Service.Lightbulb(deviceInfo.name), [Characteristic.On, Characteristic.Brightness]);
+                                            } else if(homeBridgeSettings.type === "Switch") {
+                                                accessory = new IndigoDomoticsAccessory(new Service.Switch(deviceInfo.name), [Characteristic.On]);
+                                            }
+                                            if (accessory) {
+                                                accessory.getServices = function() {
+                                                    return that.getServices(accessory);
+                                                };
+                                                accessory.platform 			= that;
+                                                accessory.remoteAccessory	= deviceInfo;
+                                                accessory.id 				= deviceInfo.id;
+                                                accessory.name				= homeBridgeSettings.name;
+                                                accessory.model				= deviceInfo.type;
+                                                accessory.manufacturer		= "Indigo";
+                                                accessory.serialNumber		= "<unknown>";
 
-                                    that.log(deviceInfo.name);
+                                                //that.log("Adding device: "+deviceInfo.name);
+                                                foundAccessories.push(accessory);
+                                            }
+                                        } catch (e) {
+                                            that.log(deviceInfo.name + " not configured for HomeBridge");
+                                        }
+                                    }
+                                    that.log(deviceInfo.name + " not configured for HomeBridge");
+
+
                                 }
+                            } else {
+                                that.log(err);
                             }
-                        }
-                    }).auth(that.username, that.password, false);
-                }
+                            if(deviceCallsLeft === 0) {
+                                that.log("All done");
+                                that.log("Delay: "+delay);
+                                callback(foundAccessories);
+                            }
+                        }).auth(that.username, that.password, false);
+                    }
 
+                }, delay);
+                delay += 50;
             });
             /*json.map(function(s) {
             that.log("Found: " + s.type);
@@ -107,25 +150,26 @@ IndigoDomoticsPlatform.prototype = {
             }
           })*/
         }
+          /*
           do {
               if(deviceCallsLeft){
-                if(deviceCallsLeft > 0){
-                    that.log("Waiting for devices, " + deviceCallsLeft + " left");
-                    var start = new Date().getTime();
-                    for (var i = 0; i < 1e7; i++) {
-                        if ((new Date().getTime() - start) > 1000){
-                            break;
-                        }
-                    }
-                } else {
-                    callback(foundAccessories);
-                }
+                  if(deviceCallsLeft > 0){
+                      that.log("Waiting for devices, " + deviceCallsLeft + " left");
+                      var start = new Date().getTime();
+                      for (var i = 0; i < 1e7; i++) {
+                          if ((new Date().getTime() - start) > 1000){
+                              break;
+                          }
+                      }
+                  } else {
+                      callback(foundAccessories);
+                  }
               } else {
                   that.log("No Devices yet, wait 1 sec.");
 
               }
           } while (deviceCallsLeft && deviceCallsLeft > 0);
-
+        */
       } else {
         that.log("There was a problem connecting with Indigo Server.");
       }
@@ -224,7 +268,6 @@ IndigoDomoticsPlatform.prototype = {
         characteristic = homebridgeAccessory.controlService.addCharacteristic(homebridgeAccessory.characteristics[i]);
       homebridgeAccessory.platform.bindCharacteristicEvents(characteristic, homebridgeAccessory);
     }
-
     return [informationService, homebridgeAccessory.controlService];
   }
 }
