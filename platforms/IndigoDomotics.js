@@ -54,6 +54,8 @@ IndigoDomoticsPlatform.prototype = {
                         url: that.url+device.restURL,
                         json: true
                     }, function (err, response, deviceInfo) {
+                        deviceCallsLeft -= 1;
+
                         if (!err && response.statusCode == 200) {
                             if (deviceInfo) {
                                 if(deviceInfo.typeSupportsOnOff) {
@@ -62,7 +64,6 @@ IndigoDomoticsPlatform.prototype = {
                                 }
                             }
                         }
-                        --deviceCallsLeft;
                     }).auth(that.username, that.password, false);
                 }
 
@@ -110,6 +111,12 @@ IndigoDomoticsPlatform.prototype = {
               if(deviceCallsLeft){
                 if(deviceCallsLeft > 0){
                     that.log("Waiting for devices, " + deviceCallsLeft + " left");
+                    var start = new Date().getTime();
+                    for (var i = 0; i < 1e7; i++) {
+                        if ((new Date().getTime() - start) > 1000){
+                            break;
+                        }
+                    }
                 } else {
                     callback(foundAccessories);
                 }
